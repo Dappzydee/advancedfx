@@ -1,5 +1,9 @@
 # Compatibility
 
+Session constraint: offline development only. No Steam/CS2 launch, process attach,
+injection, game-library execution or game-installation edits are authorized.
+Future runtime validation needs separate explicit user authorization.
+
 - HLAE base: `79886f03747efe78e0038c3cf5cbf7e7eb4ce597`.
 - UDV1 inspected: `68509a5484476610fa00911522ba5487d6b2f4fc`.
 - Last verified CS2 build: none (runtime validation outstanding).

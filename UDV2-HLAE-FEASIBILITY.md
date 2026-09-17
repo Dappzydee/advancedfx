@@ -41,6 +41,10 @@ approximation, not exact hitboxes. Current render eye incorporates stance.
 Enemy orientation unconstrained. Evaluate each stance independently; gap priority
 when one stance is hidden/exposing even if another stance is visible.
 ## 10. Geometry / trace options
+Source 2 Viewer documents separate mesh, hull, sphere and capsule shapes in its
+[physics resource model](https://s2v.app/ValveResourceFormat/api/ValveResourceFormat.ResourceTypes.PhysAggregateData.html).
+This supports mesh/hull conversion as offline work; it does not establish a runtime
+ABI. Implement conversion of owned values independently, not by copying its code.
 TRI stores nine float32 coordinates per triangle, no header (Awpy reader).
 Native BVH over two-sided segments. No engine collision or dynamic occluders.
 ## 11. Rendering options
@@ -79,6 +83,9 @@ is not redistributed or linked. The optional CUDA backend links static cudart;
 redistribution must follow NVIDIA toolkit terms. No toolkit binaries or map assets
 are committed. Map assets remain user supplied.
 ## 17. Uncertainties
+Current user constraint forbids launching/attaching to Steam/CS2, injection, loading
+game libraries for execution, or editing the game installation. Continue offline
+source/file research and standalone tests only. Runtime validation needs new consent.
 BLOCKER for native completion: no verified Windows client physics-world access,
 shape enumeration ABI or snapshot-safe callback in the inspected HLAE checkout.
 Linux library exports establish a physics module but not a portable callable ABI.

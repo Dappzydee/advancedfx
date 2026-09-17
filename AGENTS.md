@@ -28,6 +28,11 @@ See `docs/ARCHITECTURE.md`; Windows/CS2 validation is still outstanding.
 
 ## Development rules
 
+- Current session is offline development only: do not launch Steam/CS2, attach to
+  processes, inject/load game libraries, or change the game installation. Read-only
+  file/source research and standalone UDV builds/tests are permitted. Runtime work
+  requires new explicit user authorization; earlier testing plans are not consent.
+
 - Current product semantics override UDV1 prototype behavior. The workspace
   specification is `../../UDV2-HLAE-LIVE-VISION-GAP-AUTONOMOUS-AGENT-PROMPT.md`.
 - Reuse HLAE infrastructure; no duplicate hooks or unnecessary CS2 offsets/signatures.
@@ -55,7 +60,8 @@ Do not claim native runtime success from portable tests alone.
 
 ## Current next step
 
-Implement and validate the native Windows CS2 collision snapshot producer. Do not
+Implement/test owned mesh/hull conversion offline, then investigate the native
+Windows CS2 collision snapshot producer without launching the game. Do not
 invent ABI offsets or claim snapshot-input tests validate extraction. Then run
 strict CUDA parity and live CS2 acceptance. Linux CUDA compile/link already passes.
 Transfer this nested repository's Git history; the wrapper ignores `repos/`.
