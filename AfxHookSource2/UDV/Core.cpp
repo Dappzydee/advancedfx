@@ -53,7 +53,7 @@ Geometry::Geometry(std::vector<Triangle> triangles,const Cancel& cancel):triangl
 }
 uint32_t Geometry::build(uint32_t begin,uint32_t end,const Cancel& cancel,unsigned depth) {
     if(cancel&&cancel()) throw std::runtime_error("Map build cancelled");
-    Node n;
+    BvhNode n;
     n.lo={1e30f,1e30f,1e30f}; n.hi={-1e30f,-1e30f,-1e30f};
     for(auto i=begin;i<end;++i) {
         const auto& t=triangles_[order_[i]];

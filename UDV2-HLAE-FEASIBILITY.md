@@ -50,7 +50,10 @@ for worker-owned execution without touching CS2's immediate D3D context. D3D com
 remains a possible broader-hardware backend, not the first implementation.
 ## 13. Threading model
 One worker, one pending pose, immutable map/results, cancellation generation.
-No game entity or D3D calls from worker; no analysis on renderer.
+No game entity or D3D calls from worker; no analysis on renderer. CUDA calls and
+resource lifetime also belong to the worker. Low-priority nonblocking stream,
+bounded 2,048-candidate launches and 10 Hz throttling limit queued GPU work.
+No interop dependency; pinned compact readback. D3D contention remains unmeasured.
 ## 14. Performance analysis
 UDV1 CHANGELOG reports 0.301 s for 32 Dust II poses on RTX 3060 Ti; not reproduced
 and not evidence of live single-pose latency. Native initial Release benchmark:
@@ -67,7 +70,9 @@ Inherited HLAE hooks can break after CS2 updates. Fail closed when state invalid
 HLAE root LICENSE is MIT. No explicit UDV1 license found: no source copied.
 Awpy format inspected in https://awpy.readthedocs.io/en/latest/_modules/awpy/visibility.html .
 Warp upstream https://github.com/NVIDIA/warp documents Apache-2.0; neither Warp
-nor CUDA is redistributed or linked. Map assets remain user supplied.
+is redistributed or linked. The optional CUDA backend links static cudart;
+redistribution must follow NVIDIA toolkit terms. No toolkit binaries or map assets
+are committed. Map assets remain user supplied.
 ## 17. Uncertainties
 UNKNOWN: current CS2 build, live draw alignment, frame cost and scoped FOV behavior.
 ## 18. Potential issues
@@ -96,3 +101,5 @@ inspection and portable regression tests completed. Windows host compilation,
 shader execution, geometry alignment and CS2 lifecycle/frame-time acceptance
 remain unverified. No new signatures/offsets introduced. The existing HLAE
 `misc/mirv-script/src/snippets/mirv_script_view.ts` also identifies in-eye mode 2.
+CUDA backend source and strict-device parity tool implemented; host-executed
+kernel algorithm parity passes. CUDA compilation and execution still pending.

@@ -24,7 +24,7 @@ void Worker::enable(bool value) {
 void Worker::invalidate(bool unload) {
     std::lock_guard<std::mutex> lock(mutex_);
     ++serial_; pending_.reset(); latest_.reset();
-    if(unload) { ++epoch_; load_.reset(); map_.reset(); status_="no map loaded"; }
+    if(unload) { ++epoch_; load_.reset(); map_.reset(); resetCompute_=true; status_="no map loaded"; wake_.notify_one(); }
 }
 void Worker::submit(Pose pose,float range) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -35,20 +35,34 @@ void Worker::submit(Pose pose,float range) {
 std::shared_ptr<const Frame> Worker::latest() const { std::lock_guard<std::mutex> lock(mutex_); return latest_; }
 std::shared_ptr<const Map> Worker::map() const { std::lock_guard<std::mutex> lock(mutex_); return map_; }
 std::string Worker::status() const { std::lock_guard<std::mutex> lock(mutex_); return status_; }
+std::string Worker::backend() const { std::lock_guard<std::mutex> lock(mutex_); return backendName_; }
+void Worker::backend(BackendMode mode) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    backendMode_=mode; ++serial_; pending_.reset(); latest_.reset();
+    resetCompute_=true; wake_.notify_one();
+    backendName_="pending backend selection";
+}
 void Worker::run() {
+    std::unique_ptr<Compute> compute;
+    BackendMode currentMode=BackendMode::Auto;
     while(!stop_) {
         std::optional<Load> load;
         std::optional<Job> job;
         std::shared_ptr<const Map> map;
+        BackendMode mode;
+        bool reset=false;
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            wake_.wait(lock,[&]{return stop_||load_||(enabled_&&pending_&&map_);});
+            wake_.wait(lock,[&]{return stop_||resetCompute_||load_||(enabled_&&pending_&&map_);});
             if(stop_) return;
+            reset=resetCompute_; resetCompute_=false;
             if(load_) { load=std::move(load_); load_.reset(); }
-            else { job=pending_; pending_.reset(); map=map_; }
+            else if(enabled_&&pending_&&map_) { job=pending_; pending_.reset(); map=map_; }
             busy_=true;
+            mode=backendMode_;
         }
         try {
+            if(reset) compute.reset();
             if(load) {
                 auto cancel=[&]{return stop_||epoch_!=load->epoch;};
                 auto triangles=Geometry::readTri(load->path,cancel);
@@ -59,8 +73,22 @@ void Worker::run() {
                 }
             } else if(job) {
                 auto cancel=[&]{return stop_||epoch_!=job->epoch||serial_!=job->serial;};
+                if(!compute||mode!=currentMode) {
+                    std::string diagnostic;
+                    compute=makeCompute(mode,diagnostic); currentMode=mode;
+                    std::lock_guard<std::mutex> lock(mutex_);
+                    backendName_=compute->name();
+                    if(!diagnostic.empty()) backendName_+=" (emergency fallback: "+diagnostic+")";
+                }
                 auto frame=std::make_shared<Frame>(); frame->map=map;
-                frame->result=analyze(map->geometry,map->candidates,job->pose,job->range,cancel);
+                try { frame->result=compute->run(map,job->pose,job->range,cancel); }
+                catch(const std::exception& e) {
+                    if(mode!=BackendMode::Auto||std::string(compute->name())=="cpu") throw;
+                    const std::string reason=e.what();
+                    std::string unused; compute=makeCompute(BackendMode::Cpu,unused);
+                    { std::lock_guard<std::mutex> lock(mutex_); backendName_="cpu (emergency fallback: "+reason+")"; }
+                    frame->result=compute->run(map,job->pose,job->range,cancel);
+                }
                 frame->result.generation=job->serial;
                 std::lock_guard<std::mutex> lock(mutex_);
                 if(!cancel()&&enabled_) latest_=std::move(frame);

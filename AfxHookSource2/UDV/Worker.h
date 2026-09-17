@@ -1,5 +1,6 @@
 #pragma once
 #include "Core.h"
+#include "Compute.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -29,6 +30,8 @@ public:
     void enable(bool value);
     void invalidate(bool unload=false);
     void submit(Pose pose,float range=2000);
+    void backend(BackendMode);
+    std::string backend() const;
     std::shared_ptr<const Frame> latest() const;
     std::shared_ptr<const Map> map() const;
     std::string status() const;
@@ -42,6 +45,9 @@ private:
     std::atomic<bool> stop_{false},busy_{false};
     std::atomic<uint64_t> epoch_{0},serial_{0};
     bool enabled_=false;
+    BackendMode backendMode_=BackendMode::Auto;
+    bool resetCompute_=false;
+    std::string backendName_="not initialized (GPU preferred)";
     std::optional<Load> load_;
     std::optional<Job> pending_;
     std::shared_ptr<const Map> map_;

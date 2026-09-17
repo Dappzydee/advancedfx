@@ -1,5 +1,6 @@
 #include "Core.h"
 #include "Worker.h"
+#include "GpuKernel.h"
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -55,10 +56,18 @@ int main() {
         std::vector<Geometry> leaves;
         for(int i=0;i<150;++i) { triangles.push_back({point(),point(),point()}); leaves.emplace_back(std::vector<Triangle>{triangles.back()}); }
         Geometry hierarchy(triangles);
+        gpu::Scene gpuScene{hierarchy.triangles().data(),hierarchy.nodes().data(),hierarchy.order().data(),static_cast<uint32_t>(hierarchy.nodes().size())};
         for(int i=0;i<1500;++i) {
             auto from=point(),to=point(); bool expected=false;
             for(const auto& leaf:leaves) if(leaf.blocked(from,to)) { expected=true; break; }
             check(hierarchy.blocked(from,to)==expected,"BVH versus exhaustive rays");
+            check(gpu::blocked(gpuScene,from,to)==expected,"GPU kernel algorithm versus exhaustive rays (host execution)");
+        }
+        for(int i=0;i<100;++i) {
+            Pose pose; pose.feet=point(); pose.eye=pose.feet+Vec3{0,0,64}; pose.angles={coord(random)*0.08f,coord(random),0};
+            Candidate candidate{point(),{0,0,1},3};
+            auto cpu=classify(hierarchy,pose,candidate), gpu=gpu::classify(gpuScene,gpu::prepare(pose,10000),candidate);
+            check(cpu.vision==gpu.vision&&cpu.gap==gpu.gap,"CPU/GPU classification algorithm parity (host execution)");
         }
         Geometry floor({{{-128,-128,0},{128,-128,0},{128,128,0}},{{-128,-128,0},{128,128,0},{-128,128,0}}});
         auto candidates=generateCandidates(floor);

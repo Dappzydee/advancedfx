@@ -3,7 +3,7 @@
 Implemented pipeline (host runtime validation outstanding):
 
 ```text
-HLAE demo/player state -> immutable pose -> latest-only CPU worker
+HLAE demo/player state -> immutable pose -> latest-only analysis worker
                                               ^          |
                                       static TRI + BVH   v
 HLAE world render hook <- immutable classified floor markers
@@ -17,6 +17,18 @@ per-stance body visibility. `Worker.*` owns one thread and one replaceable pendi
 pose. Epoch/serial checks cancel obsolete analysis and reject stale publication.
 Map loading runs on the worker too. Disable clears results; unload discards map.
 Readers copy immutable shared pointers under short locks, never wait for analysis.
+
+`Compute.*` selects CUDA first in auto mode. `CudaCompute.cu` keeps triangles,
+BVH, ordering and candidates resident on the GPU in a low-priority nonblocking
+stream owned by the worker. Batches of 2,048 candidates bound submitted work;
+cancellation is checked between batches. Compact stance masks return through
+pinned memory. No CUDA/D3D interop or immediate-context access from this backend.
+Auto fallback records the initialization/execution failure. Strict CUDA mode never
+falls back. Backend changes/map unload release resources on the worker; no
+cudaDeviceReset. Priority is only a scheduling hint, not a D3D frame budget.
+`GpuKernel.h` is host/device code: portable tests check its algorithms on CPU;
+`udv_gpu_validate` separately checks actual device output. GPU event intervals
+include gaps between bounded launches; total time includes upload/readback.
 
 `HlaeBridge.*` samples the original setup-view before HLAE camera overrides. It
 resolves a live pawn through existing entity helpers, validates map and demo state,

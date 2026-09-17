@@ -25,3 +25,12 @@ time; this is not a measurement of GPU cost or CS2 frame-time impact.
 
 Status: Experimental; core tested, native runtime unverified. Enemy eye to player body LOS AND no player-to-enemy vision,
 evaluated per stance. Hypothetical enemy may face the analyzed player.
+
+## GPU analysis
+
+Status: Implemented source; CUDA build/device validation pending.
+Primary target: RTX 3060 Ti; CPU is emergency fallback.
+`mirv_udv backend auto` prefers CUDA and records any fallback reason in status.
+`mirv_udv backend cuda` is strict; `mirv_udv backend cpu` forces the reference path.
+Backend changes invalidate old work. Status includes backend/device and GPU timing.
+10 Hz submission throttling remains. GPU contention must be measured on Windows.

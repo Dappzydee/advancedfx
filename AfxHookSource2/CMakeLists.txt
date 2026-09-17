@@ -103,6 +103,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     UDV/Worker.cpp
     UDV/HlaeBridge.cpp
     UDV/Overlay.cpp
+    UDV/Compute.cpp
     ../deps/release/Detours/src/detours.cpp
     ../deps/release/Detours/src/detours.h
     ../deps/release/Detours/src/detver.h
@@ -282,6 +283,9 @@ target_sources(${PROJECT_NAME} PRIVATE
 )
 
 # This is far form proper, but it will do for now:
+set(UDV_COMPUTE_TARGET ${PROJECT_NAME})
+include(UDV/Cuda.cmake)
+
 source_group("deps/release/Detours" REGULAR_EXPRESSION "/deps/release/Detours/")
 source_group("deps/release/Detours/src" REGULAR_EXPRESSION "/deps/release/Detours/src/")
 source_group("deps/release/prop" REGULAR_EXPRESSION "/deps/release/prop/")

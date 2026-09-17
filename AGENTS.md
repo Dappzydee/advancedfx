@@ -53,5 +53,5 @@ Do not claim native runtime success from portable tests alone.
 
 ## Current next step
 
-Implement primary CUDA backend and parity tooling; retain CPU emergency fallback.
-Windows x64 build, RTX 3060 Ti testing and CS2 playback acceptance remain.
+Compile-check the implemented CUDA backend, then run strict CUDA parity tests on
+the Windows RTX 3060 Ti PC. Full HLAE build and CS2 playback acceptance remain.

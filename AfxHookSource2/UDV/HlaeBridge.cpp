@@ -174,6 +174,12 @@ void command(advancedfx::ICommandArgs* args) {
     }
     if(sub=="fov"&&argc==3&&number(args->ArgV(2),value)&&value>1&&value<179) { explicitFov=value; clear(); return; }
     if(sub=="range"&&argc==3&&number(args->ArgV(2),value)&&value>=128&&value<=8000) { range=value; clear(); return; }
+    if(sub=="backend"&&argc==3) {
+        const std::string mode=args->ArgV(2);
+        if(mode=="auto"||mode=="cuda"||mode=="cpu") {
+            clear(); getWorker().backend(mode=="cuda"?BackendMode::Cuda:mode=="cpu"?BackendMode::Cpu:BackendMode::Auto); return;
+        }
+    }
     if(sub=="color"&&argc==7) {
         std::array<float,4> color;
         bool ok=true; for(int i=0;i<4;++i) ok=number(args->ArgV(i+3),color[i])&&color[i]>=0&&color[i]<=1&&ok;
@@ -186,12 +192,14 @@ void command(advancedfx::ICommandArgs* args) {
             enabled,w.status().c_str(),m?m->name.c_str():"none",m?m->candidates.size():0,w.busy(),targetIndex,
             havePose?lastPose.tick:-1,havePose?lastPose.horizontalFov:0,range,r?r->result.milliseconds:0,r?r->result.tested:0);
         advancedfx::Message("UDV: last overlay CPU submission %.3f ms (not GPU/frame time)\n",overlayCpuMilliseconds());
+        advancedfx::Message("UDV: backend=%s GPU interval=%.3f ms (-1 if unavailable)\n",w.backend().c_str(),r?r->result.gpuMilliseconds:-1);
         return;
     }
     advancedfx::Message("mirv_udv load <map name> <quoted TRI path> [spacing 16..128, default 64]\n"
         "mirv_udv vision 0|1\nmirv_udv target auto|<pawn/controller entity index>\n"
         "mirv_udv fov <explicit-target horizontal degrees>\nmirv_udv range <128..8000>\n"
         "mirv_udv color vision|gap <r g b a in 0..1>\nmirv_udv status\n"
+        "mirv_udv backend auto|cuda|cpu (auto prefers CUDA; CPU is emergency fallback)\n"
         "Experimental static geometry; reload after map changes. Automatic FOV requires first-person spectating.\n");
 }
 }

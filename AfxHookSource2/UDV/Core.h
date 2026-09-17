@@ -19,6 +19,7 @@ float length(Vec3 a);
 bool finite(Vec3 a);
 struct Triangle { Vec3 a,b,c; };
 using Cancel = std::function<bool()>;
+struct BvhNode { Vec3 lo,hi; uint32_t begin=0,count=0,left=0,right=0; };
 
 class Geometry {
 public:
@@ -26,11 +27,12 @@ public:
     static std::vector<Triangle> readTri(const std::string& path,const Cancel& cancel={});
     bool blocked(Vec3 from, Vec3 to) const;
     const std::vector<Triangle>& triangles() const { return triangles_; }
+    const std::vector<BvhNode>& nodes() const { return nodes_; }
+    const std::vector<uint32_t>& order() const { return order_; }
 private:
-    struct Node { Vec3 lo,hi; uint32_t begin=0,count=0,left=0,right=0; };
     std::vector<Triangle> triangles_;
     std::vector<uint32_t> order_;
-    std::vector<Node> nodes_;
+    std::vector<BvhNode> nodes_;
     uint32_t build(uint32_t begin, uint32_t end, const Cancel& cancel, unsigned depth=0);
 };
 enum : uint8_t { Standing=1, Crouching=2 };
@@ -57,6 +59,7 @@ struct Result {
     uint64_t generation=0;
     std::vector<Classification> classes;
     double milliseconds=0;
+    double gpuMilliseconds=-1; // CUDA event time, -1 when unavailable.
     size_t tested=0;
 };
 Result analyze(const Geometry&, const std::vector<Candidate>&, const Pose&, float range,
