@@ -15,3 +15,8 @@ an arbitrary changed ABI. OBS_MODE_IN_EYE=2 and FOV scaling require runtime chec
 Pinned SDK submodule fetched: `2e1366353c50d40150276c5d580b0eecb183881b`.
 Remaining upstream submodules are not initialized in this checkout. Windows
 MSVC/SDK toolchain is absent here, so host compile acceptance is outstanding.
+
+Overlay uses the Windows SDK D3DCompiler library (`d3dcompiler.lib`) to compile
+small embedded SM5 shaders lazily. D3D11 initialization failure suppresses drawing
+and warns once per device. Depth convention follows CampathDrawer (LESS_EQUAL);
+projection/depth alignment must be validated in live CS2 and recording passes.

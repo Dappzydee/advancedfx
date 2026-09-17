@@ -2,7 +2,7 @@
 
 ## Live Vision Area
 
-Status: Experimental; core tested, bridge statically inspected, rendering pending.
+Status: Experimental; core tested, native bridge/renderer not Windows-built or runtime verified.
 FOV plus static LOS to representative enemy body points.
 Default color: red. Candidate surfaces are approximate walkable space.
 
@@ -14,6 +14,12 @@ Automatic targeting follows first-person observer target and uses pre-override
 game camera FOV with HLAE's AlienSwarm aspect scaling. Explicit targets require
 `mirv_udv fov <horizontal degrees>` because their FOV need not match the camera.
 This FOV/observer integration has not been tested in CS2.
+
+Rendering: batched slope-aligned floor squares with depth testing. Use
+`mirv_udv color vision 1 0 0 0.45` or `mirv_udv color gap 1 0.65 0 0.65`.
+Values are RGBA in 0..1. Gap has deterministic priority when different stances
+produce both classes. Status reports analysis latency and overlay CPU submission
+time; this is not a measurement of GPU cost or CS2 frame-time impact.
 
 ## Exposure Gap
 

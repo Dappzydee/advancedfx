@@ -1,6 +1,6 @@
 # Architecture
 
-Core, worker and host bridge implemented; renderer integration in progress:
+Implemented pipeline (host runtime validation outstanding):
 
 ```text
 HLAE demo/player state -> immutable pose -> latest-only CPU worker
@@ -26,6 +26,15 @@ ticks, jumps over 16 ticks and teleports invalidate it. Completed overlays are
 rejected beyond 32 ticks of age. Large forward discontinuities are conservative
 seek detection; exact same-tick seeks cannot be identified through tick alone.
 Worker shutdown is in engine shutdown, never DllMain.
+
+`Overlay.*` uses HLAE's existing world draw site and actual world-to-screen matrix.
+An engine/render packet queue mirrors CampathDrawer's frame boundaries, capped at
+16 entries. Generation checks prevent pre-invalidation packets from drawing.
+The renderer uses a separate deferred context, one DrawInstanced call, read-only
+depth, alpha blending and ExecuteCommandList with context restoration. Instance
+data changes only for a new result/color; matrices update each draw. Floor quads
+follow candidate slope and sit 0.75 units above it. This is a sampled area overlay,
+not a continuous navmesh fill. Device reset drops cached resources.
 
 ## Key decisions
 

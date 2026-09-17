@@ -2,6 +2,7 @@
 #define NOMINMAX
 #endif
 #include "HlaeBridge.h"
+#include "Overlay.h"
 #include "../ClientEntitySystem.h"
 #include "../SchemaSystem.h"
 #include "../MirvTime.h"
@@ -184,6 +185,7 @@ void command(advancedfx::ICommandArgs* args) {
         advancedfx::Message("UDV: enabled=%d state=%s map=%s candidates=%zu busy=%d target=%d tick=%d FOV=%.2f range=%.0f analysis_ms=%.2f tested=%zu\n",
             enabled,w.status().c_str(),m?m->name.c_str():"none",m?m->candidates.size():0,w.busy(),targetIndex,
             havePose?lastPose.tick:-1,havePose?lastPose.horizontalFov:0,range,r?r->result.milliseconds:0,r?r->result.tested:0);
+        advancedfx::Message("UDV: last overlay CPU submission %.3f ms (not GPU/frame time)\n",overlayCpuMilliseconds());
         return;
     }
     advancedfx::Message("mirv_udv load <map name> <quoted TRI path> [spacing 16..128, default 64]\n"

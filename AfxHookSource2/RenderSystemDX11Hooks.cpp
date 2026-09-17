@@ -3,6 +3,8 @@
 #include "RenderSystemDX11Hooks.h"
 
 #include "CampathDrawer.h"
+#include "UDV/HlaeBridge.h"
+#include "UDV/Overlay.h"
 #include "RenderServiceHooks.h"
 #include "ReShadeAdvancedfx.h"
 #include "WrpConsole.h"
@@ -1594,6 +1596,7 @@ HRESULT STDMETHODCALLTYPE New_CreateRenderTargetView(  ID3D11Device * This,
                     g_DepthCompositor.OnTargetEnd();
                     //CAfxShaderResourceViews::Clear();
                     g_CampathDrawer.EndDevice();
+                    udv::resetOverlayDevice();
                     g_pDevice->Release();
                     g_pDevice = nullptr;
                 }
@@ -1739,6 +1742,7 @@ void STDMETHODCALLTYPE New_OMSetRenderTargets( ID3D11DeviceContext * This,
                 This->RSGetViewports(&numViewPorts, &g_ViewPort);
 
                 g_CampathDrawer.OnRenderThread_Draw(This, &g_ViewPort, g_pCurrentRenderTargetView, g_pCurrentDepthStencilView);
+                udv::drawOverlay(This, &g_ViewPort, g_pCurrentRenderTargetView, g_pCurrentDepthStencilView);
 
                 g_bInOwnDraw = false;
             }
@@ -2181,6 +2185,7 @@ void Before_Present() {
     g_bInOwnDraw = true;
 
     g_CampathDrawer.OnRenderThread_Present();
+    udv::present();
 
     if (g_ReShadeAdvancedfx.IsConnected() && !g_ReShadeAdvancedfx.HasRendered()) {
         g_ReShadeAdvancedfx.AdvancedfxRenderEffects(nullptr, nullptr);
@@ -4976,6 +4981,7 @@ void RenderSystemDX11_EngineThread_Prepare() {
 void RenderSystemDX11_EngineThread_BeforeRender() {
     g_RenderCommands.EngineThread_EndFrame();
     g_CampathDrawer.OnEngineThread_EndFrame();
+    udv::endFrame();
 }
 
 bool RenderSystemDX11_EngineThread_HasNextRenderPass() {

@@ -86,4 +86,8 @@ this report and five docs files.
 Portable core and worker built with GCC 13.3 Release. Tests pass for required
 visibility cases, FOV, finite segments, floor candidates, cancellation, latest-only
 publication, disable/unload, map load failure and malformed TRI. Host integration
-in progress; no native CS2 runtime functionality verified.
+implemented with commands and batched D3D11 floor overlay. Static SDK/interface
+inspection and portable regression tests completed. Windows host compilation,
+shader execution, geometry alignment and CS2 lifecycle/frame-time acceptance
+remain unverified. No new signatures/offsets introduced. The existing HLAE
+`misc/mirv-script/src/snippets/mirv_script_view.ts` also identifies in-eye mode 2.

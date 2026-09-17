@@ -92,6 +92,7 @@ target_link_directories(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${AFX_OPENEXR_LINK_LIBRARIES}
     afx_hook_source2
+    d3dcompiler.lib
 	dxguid.lib
     bcrypt.lib # corrosion fails to detect this
     $<$<CONFIG:Debug>:msvcrtd.lib> # corrision messes this up in latest rust version
@@ -101,6 +102,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     UDV/Core.cpp
     UDV/Worker.cpp
     UDV/HlaeBridge.cpp
+    UDV/Overlay.cpp
     ../deps/release/Detours/src/detours.cpp
     ../deps/release/Detours/src/detours.h
     ../deps/release/Detours/src/detver.h
