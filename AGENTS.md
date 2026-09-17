@@ -32,6 +32,9 @@ See `docs/ARCHITECTURE.md`; Windows/CS2 validation is still outstanding.
   specification is `../../UDV2-HLAE-LIVE-VISION-GAP-AUTONOMOUS-AGENT-PROMPT.md`.
 - Reuse HLAE infrastructure; no duplicate hooks or unnecessary CS2 offsets/signatures.
 - Keep UDV2 modular under `AfxHookSource2/UDV`; never block rendering with analysis.
+- GPU is the primary compute backend; CPU is only the correctness reference and
+  emergency fallback. Target PC is Windows with RTX 3060 Ti; laptop timings are
+  not grounds for dropping GPU implementation.
 - Preserve unrelated user changes and work in coherent vertical slices.
 - Build/test before declaring a milestone complete; distinguish portable tests,
   static inspection, Windows builds and live CS2 verification.
@@ -50,5 +53,5 @@ Do not claim native runtime success from portable tests alone.
 
 ## Current next step
 
-Optimize measured CPU traversal; native overlay is checkpointed but unbuilt on Windows.
-After portable validation, Windows x64 build and CS2 playback acceptance remain.
+Implement primary CUDA backend and parity tooling; retain CPU emergency fallback.
+Windows x64 build, RTX 3060 Ti testing and CS2 playback acceptance remain.

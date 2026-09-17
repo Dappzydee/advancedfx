@@ -51,9 +51,9 @@ void Worker::run() {
         try {
             if(load) {
                 auto cancel=[&]{return stop_||epoch_!=load->epoch;};
-                auto triangles=Geometry::readTri(load->path);
+                auto triangles=Geometry::readTri(load->path,cancel);
                 if(!cancel()) {
-                    auto built=std::make_shared<Map>(load->name,Geometry(std::move(triangles)),load->spacing,cancel);
+                    auto built=std::make_shared<Map>(load->name,Geometry(std::move(triangles),cancel),load->spacing,cancel);
                     std::lock_guard<std::mutex> lock(mutex_);
                     if(!cancel()) { map_=std::move(built); status_="ready"; }
                 }

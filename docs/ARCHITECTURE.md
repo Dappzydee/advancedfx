@@ -12,7 +12,7 @@ HLAE world render hook <- immutable classified floor markers
 Separate portable geometry/analysis/control from HLAE entity access and D3D11.
 No new injection framework or Present hook. No timeline or offline demo scan.
 
-`Core.*` owns TRI parsing, median-split BVH, floor support/headroom probes and
+`Core.*` owns TRI parsing, binned-SAH BVH, floor support/headroom probes and
 per-stance body visibility. `Worker.*` owns one thread and one replaceable pending
 pose. Epoch/serial checks cancel obsolete analysis and reject stale publication.
 Map loading runs on the worker too. Disable clears results; unload discards map.
@@ -41,7 +41,14 @@ not a continuous navmesh fill. Device reset drops cached resources.
 ### 2026-09-17 — CPU correctness first
 
 Reason: portable tests and no additional runtime dependencies.
-Consequences: profile Dust II before deciding whether GPU acceleration is needed.
+Consequences: provides the correctness reference and emergency fallback. Superseded
+as the primary compute strategy by the GPU requirement below.
+
+### 2026-09-17 — GPU primary, CPU emergency fallback
+
+Reason: explicit user requirement; deployment is Windows on an RTX 3060 Ti.
+Consequences: implement CUDA as primary compute, persistent device geometry and
+compact result readback. Laptop CPU measurements do not justify deferring GPU work.
 
 ### 2026-09-17 — Independent implementation
 

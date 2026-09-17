@@ -21,7 +21,7 @@ bool finite(Vec3 a) { return std::isfinite(a.x)&&std::isfinite(a.y)&&std::isfini
 static Vec3 minimum(Vec3 a,Vec3 b) { return {std::min(a.x,b.x),std::min(a.y,b.y),std::min(a.z,b.z)}; }
 static Vec3 maximum(Vec3 a,Vec3 b) { return {std::max(a.x,b.x),std::max(a.y,b.y),std::max(a.z,b.z)}; }
 
-std::vector<Triangle> Geometry::readTri(const std::string& path) {
+std::vector<Triangle> Geometry::readTri(const std::string& path,const Cancel& cancel) {
     std::ifstream file(path,std::ios::binary|std::ios::ate);
     if(!file) throw std::runtime_error("Cannot open TRI file");
     const auto bytes=file.tellg();
@@ -31,6 +31,7 @@ std::vector<Triangle> Geometry::readTri(const std::string& path) {
     out.reserve(static_cast<size_t>(bytes)/36);
     // Awpy TRI on supported Windows/Linux machines is headerless little-endian float32.
     for(std::streamoff i=0;i<bytes;i+=36) {
+        if(i%(4096*36)==0&&cancel&&cancel()) throw std::runtime_error("Map load cancelled");
         unsigned char raw[36]; float v[9];
         if(!file.read(reinterpret_cast<char*>(raw),36)) throw std::runtime_error("Truncated TRI");
         for(int j=0;j<9;++j) {
@@ -43,14 +44,15 @@ std::vector<Triangle> Geometry::readTri(const std::string& path) {
     }
     return out;
 }
-Geometry::Geometry(std::vector<Triangle> triangles):triangles_(std::move(triangles)) {
+Geometry::Geometry(std::vector<Triangle> triangles,const Cancel& cancel):triangles_(std::move(triangles)) {
     if(triangles_.size()>10000000) throw std::runtime_error("Too many triangles");
     for(const auto& t:triangles_) if(!finite(t.a)||!finite(t.b)||!finite(t.c)) throw std::runtime_error("Nonfinite geometry");
     order_.resize(triangles_.size());
     std::iota(order_.begin(),order_.end(),0u);
-    if(!order_.empty()) build(0,static_cast<uint32_t>(order_.size()));
+    if(!order_.empty()) build(0,static_cast<uint32_t>(order_.size()),cancel);
 }
-uint32_t Geometry::build(uint32_t begin,uint32_t end) {
+uint32_t Geometry::build(uint32_t begin,uint32_t end,const Cancel& cancel,unsigned depth) {
+    if(cancel&&cancel()) throw std::runtime_error("Map build cancelled");
     Node n;
     n.lo={1e30f,1e30f,1e30f}; n.hi={-1e30f,-1e30f,-1e30f};
     for(auto i=begin;i<end;++i) {
@@ -59,21 +61,61 @@ uint32_t Geometry::build(uint32_t begin,uint32_t end) {
         n.hi=maximum(n.hi,maximum(t.a,maximum(t.b,t.c)));
     }
     auto id=static_cast<uint32_t>(nodes_.size()); nodes_.push_back(n);
-    if(end-begin<=8) { nodes_[id].begin=begin; nodes_[id].count=end-begin; }
+    if(end-begin<=8||depth>=48) { nodes_[id].begin=begin; nodes_[id].count=end-begin; }
     else {
-        Vec3 extent=n.hi-n.lo;
+        // Binned surface-area heuristic avoids large overlapping children on
+        // map meshes with long walls and uneven triangle density.
+        Vec3 centLo{1e30f,1e30f,1e30f},centHi{-1e30f,-1e30f,-1e30f};
+        auto centroid=[&](uint32_t index) {
+            const auto& t=triangles_[index]; return (t.a+t.b+t.c)*(1.0f/3);
+        };
+        for(auto i=begin;i<end;++i) { auto c=centroid(order_[i]); centLo=minimum(centLo,c); centHi=maximum(centHi,c); }
+        Vec3 extent=centHi-centLo;
         int axis=extent.y>extent.x ? 1:0; if(extent.z>extent[axis]) axis=2;
         auto mid=begin+(end-begin)/2;
-        std::nth_element(order_.begin()+begin,order_.begin()+mid,order_.begin()+end,[&](uint32_t a,uint32_t b) {
-            const auto& x=triangles_[a]; const auto& y=triangles_[b];
-            return x.a[axis]+x.b[axis]+x.c[axis]<y.a[axis]+y.b[axis]+y.c[axis];
-        });
-        const auto left=build(begin,mid), right=build(mid,end);
+        struct Bin { Vec3 lo{1e30f,1e30f,1e30f},hi{-1e30f,-1e30f,-1e30f}; uint32_t count=0; };
+        auto merge=[](Bin a,const Bin& b) { if(b.count) { a.lo=minimum(a.lo,b.lo); a.hi=maximum(a.hi,b.hi); a.count+=b.count; } return a; };
+        auto cost=[](const Bin& b) { auto e=b.hi-b.lo; return b.count ? double(e.x*e.y+e.y*e.z+e.z*e.x)*b.count:0; };
+        double best=std::numeric_limits<double>::infinity(); int bestAxis=-1,bestSplit=0;
+        for(int a=0;a<3;++a) {
+            if(extent[a]<1e-5f) continue;
+            std::array<Bin,16> bins{},left{},right{};
+            for(auto i=begin;i<end;++i) {
+                const auto index=order_[i];
+                int b=std::clamp(static_cast<int>((centroid(index)[a]-centLo[a])*16/extent[a]),0,15);
+                const auto& t=triangles_[index]; auto& bin=bins[b]; ++bin.count;
+                bin.lo=minimum(bin.lo,minimum(t.a,minimum(t.b,t.c)));
+                bin.hi=maximum(bin.hi,maximum(t.a,maximum(t.b,t.c)));
+            }
+            left[0]=bins[0]; right[15]=bins[15];
+            for(int b=1;b<16;++b) left[b]=merge(left[b-1],bins[b]);
+            for(int b=14;b>=0;--b) right[b]=merge(right[b+1],bins[b]);
+            for(int b=0;b<15;++b) {
+                const double c=cost(left[b])+cost(right[b+1]);
+                // Bound recursion depth even with adversarial geometry.
+                if(left[b].count>=(end-begin)/16&&right[b+1].count>=(end-begin)/16&&
+                   left[b].count&&right[b+1].count&&c<best) { best=c; bestAxis=a; bestSplit=b; }
+            }
+        }
+        if(bestAxis>=0) {
+            auto it=std::partition(order_.begin()+begin,order_.begin()+end,[&](uint32_t i) {
+                int bin=std::clamp(static_cast<int>((centroid(i)[bestAxis]-centLo[bestAxis])*16/extent[bestAxis]),0,15);
+                return bin<=bestSplit;
+            });
+            mid=static_cast<uint32_t>(it-order_.begin());
+        } else {
+            std::nth_element(order_.begin()+begin,order_.begin()+mid,order_.begin()+end,[&](uint32_t a,uint32_t b) {
+                return centroid(a)[axis]<centroid(b)[axis];
+            });
+        }
+        const auto left=build(begin,mid,cancel,depth+1), right=build(mid,end,cancel,depth+1);
         nodes_[id].left=left; nodes_[id].right=right;
     }
     return id;
 }
 static bool hitBox(Vec3 lo,Vec3 hi,Vec3 o,Vec3 d,float low,float high) {
+    // Conservative bounds keep grazing hits independent of BVH partition order.
+    lo=lo-Vec3{0.01f,0.01f,0.01f}; hi=hi+Vec3{0.01f,0.01f,0.01f};
     for(int i=0;i<3;++i) {
         if(std::abs(d[i])<1e-12f) { if(o[i]<lo[i]||o[i]>hi[i]) return false; }
         else {

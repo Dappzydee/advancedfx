@@ -22,8 +22,8 @@ using Cancel = std::function<bool()>;
 
 class Geometry {
 public:
-    explicit Geometry(std::vector<Triangle> triangles);
-    static std::vector<Triangle> readTri(const std::string& path);
+    explicit Geometry(std::vector<Triangle> triangles,const Cancel& cancel={});
+    static std::vector<Triangle> readTri(const std::string& path,const Cancel& cancel={});
     bool blocked(Vec3 from, Vec3 to) const;
     const std::vector<Triangle>& triangles() const { return triangles_; }
 private:
@@ -31,7 +31,7 @@ private:
     std::vector<Triangle> triangles_;
     std::vector<uint32_t> order_;
     std::vector<Node> nodes_;
-    uint32_t build(uint32_t begin, uint32_t end);
+    uint32_t build(uint32_t begin, uint32_t end, const Cancel& cancel, unsigned depth=0);
 };
 enum : uint8_t { Standing=1, Crouching=2 };
 struct Candidate { Vec3 feet; Vec3 normal; uint8_t stances=0; };

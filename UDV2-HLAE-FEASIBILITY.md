@@ -44,8 +44,10 @@ Native BVH over two-sided segments. No engine collision or dynamic occluders.
 Separate UDV renderer on the existing world draw hook. Batched floor markers;
 avoid one draw per cell. Reuse deferred-context state restoration pattern.
 ## 12. Compute options
-CPU first. CUDA adds NVIDIA dependency/context contention; D3D compute requires
-additional BVH traversal and synchronization work. Neither justified yet.
+CPU correctness implementation completed. User explicitly requires GPU as primary,
+CPU as emergency fallback; deployment is RTX 3060 Ti on Windows. CUDA is selected
+for worker-owned execution without touching CS2's immediate D3D context. D3D compute
+remains a possible broader-hardware backend, not the first implementation.
 ## 13. Threading model
 One worker, one pending pose, immutable map/results, cancellation generation.
 No game entity or D3D calls from worker; no analysis on renderer.
@@ -55,7 +57,10 @@ and not evidence of live single-pose latency. Native initial Release benchmark:
 513,783 Dust II triangles, 55,109 candidates at spacing 32, median 188.5 ms,
 max 602.4 ms across 20 synthetic poses (2,000-unit range, both stances).
 Spacing 64: 13,396 candidates, median 108.4 ms, max 308.0 ms. These initial
-median-split BVH results motivate traversal optimization; not CS2 frame measurements.
+median-split BVH results motivated traversal optimization; not CS2 frame measurements.
+Binned-SAH on Ryzen 7 PRO 7840U / GCC 13.3 Release: latest 64-unit run median
+13.45 ms, max 22.20 ms, map preparation 514.6 ms. Runs vary with laptop power/clock.
+These measurements characterize the emergency fallback, not target GPU performance.
 ## 15. Maintenance / compatibility risk
 Inherited HLAE hooks can break after CS2 updates. Fail closed when state invalid.
 ## 16. Licensing findings

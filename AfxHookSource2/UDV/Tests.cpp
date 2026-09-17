@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
+#include <random>
 #include <iostream>
 #include <stdexcept>
 using namespace udv;
@@ -45,6 +46,20 @@ int main() {
         check(closed.blocked({0,0,64},{100,0,64})&&closed.blocked({100,0,64},{0,0,64}),"two-sided rays");
         check(!closed.blocked({0,0,64},{40,0,64}),"finite ray extent");
         check(!closed.blocked({0,0,64},{0,100,64}),"parallel slab");
+        // Compare the accelerated hierarchy to exhaustive single-triangle queries.
+        // This validates pruning/partitioning independently of traversal order.
+        std::mt19937 random(42);
+        std::uniform_real_distribution<float> coord(-1000,1000);
+        auto point=[&]{return Vec3{coord(random),coord(random),coord(random)};};
+        std::vector<Triangle> triangles;
+        std::vector<Geometry> leaves;
+        for(int i=0;i<150;++i) { triangles.push_back({point(),point(),point()}); leaves.emplace_back(std::vector<Triangle>{triangles.back()}); }
+        Geometry hierarchy(triangles);
+        for(int i=0;i<1500;++i) {
+            auto from=point(),to=point(); bool expected=false;
+            for(const auto& leaf:leaves) if(leaf.blocked(from,to)) { expected=true; break; }
+            check(hierarchy.blocked(from,to)==expected,"BVH versus exhaustive rays");
+        }
         Geometry floor({{{-128,-128,0},{128,-128,0},{128,128,0}},{{-128,-128,0},{128,128,0},{-128,128,0}}});
         auto candidates=generateCandidates(floor);
         check(candidates.size()==49,"floor support and deduplication");
