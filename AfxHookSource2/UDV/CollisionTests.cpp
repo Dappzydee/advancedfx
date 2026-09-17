@@ -1,5 +1,6 @@
 #include "CollisionScene.h"
 #include "Worker.h"
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <limits>
@@ -14,8 +15,47 @@ template<class F> static void await(F fn) {
     const auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);
     while(!fn()) { check(std::chrono::steady_clock::now()<end,"Worker timeout"); std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
 }
+static void boxTests() {
+    CollisionShape box;
+    box.kind=ShapeKind::ConvexFaces; box.sight=SightPolicy::BlocksSight;
+    box.vertices={{-10,-10,-10},{10,-10,-10},{10,10,-10},{-10,10,-10},
+                  {-10,-10,10},{10,-10,10},{10,10,10},{-10,10,10}};
+    box.faces={{0,3,2,1},{4,5,6,7},{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7}};
+    const std::array<Vec3,6> outside{{{30,0,0},{-30,0,0},{0,30,0},{0,-30,0},{0,0,30},{0,0,-30}}};
+    auto verify=[&](const CollisionShape& shape,Vec3 center) {
+        auto triangles=convertCollision({"box",1,{shape}});
+        check(triangles.size()==12,"Six quad faces produce twelve triangles");
+        Geometry geometry(std::move(triangles));
+        for(auto offset:outside) {
+            check(geometry.blocked(center,center+offset),"Box blocks every inside-to-outside ray");
+            check(geometry.blocked(center+offset,center),"Box blocks every outside-to-inside ray");
+        }
+        check(!geometry.blocked(center+Vec3{40,40,40},center+Vec3{60,40,40}),"Ray outside box stays clear");
+        check(!geometry.blocked(center+Vec3{1,1,1},center+Vec3{2,2,2}),"Interior segment does not cross surface");
+    };
+    verify(box,{});
+    for(auto& face:box.faces) std::reverse(face.begin(),face.end());
+    verify(box,{}); // Occlusion is two-sided, independent of winding.
+    box.toWorld={0,-2,0,100, -1,0,0,200, 0,0,0.5f,300};
+    verify(box,{100,200,300}); // Rotation, reflection, nonuniform scale and translation.
+
+    CollisionScene invalid{"box",2,{box}};
+    invalid.shapes[0].faces[0]={0,3,3,2,1};
+    rejects([&]{convertCollision(invalid);},"Reject repeated face vertex");
+    invalid.shapes[0]=box; invalid.shapes[0].vertices[2]={0,-5,-10};
+    rejects([&]{convertCollision(invalid);},"Reject concave face");
+    invalid.shapes[0]=box; invalid.shapes[0].toWorld[3]=std::numeric_limits<float>::infinity();
+    rejects([&]{convertCollision(invalid);},"Reject infinite transform");
+    invalid.shapes[0]=box; invalid.shapes[0].toWorld[3]=2000000;
+    rejects([&]{convertCollision(invalid);},"Reject out-of-bounds world vertices");
+    CollisionScene multiple{"box",3,{box,box}};
+    int checks=0;
+    rejects([&]{convertCollision(multiple,[&]{return ++checks==5;});},"Cancel during conversion, not only at entry");
+    check(checks==5,"Cancellation reached in-progress conversion");
+}
 int main() {
     try {
+        boxTests();
         CollisionShape floor;
         floor.kind=ShapeKind::IndexedMesh; floor.sight=SightPolicy::BlocksSight;
         floor.vertices={{-128,-128,0},{128,-128,0},{128,128,0},{-128,128,0}};

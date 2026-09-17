@@ -41,5 +41,8 @@
 
 ## Validation
 
+- Collision conversion regression fixtures now cover all six box faces in both
+  ray directions, reversed winding, combined transforms, clear interior/exterior
+  segments, concave/repeated vertices, transform bounds and mid-conversion cancel.
 - CUDA 13.0 Linux compile/link passes; portable and sanitizer checks pass.
 - Actual GPU parity is skipped here; Windows/RTX 3060 Ti and CS2 acceptance remain.
