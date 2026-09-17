@@ -53,5 +53,6 @@ Do not claim native runtime success from portable tests alone.
 
 ## Current next step
 
-Compile-check the implemented CUDA backend, then run strict CUDA parity tests on
-the Windows RTX 3060 Ti PC. Full HLAE build and CS2 playback acceptance remain.
+Run strict CUDA parity tests on the Windows RTX 3060 Ti PC, then build HLAE and
+validate live CS2. Linux CUDA compile/link and portable tests are already complete.
+Transfer this nested repository's Git history; the wrapper ignores `repos/`.

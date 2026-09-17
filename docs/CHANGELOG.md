@@ -20,3 +20,15 @@
   ray checks cover hierarchy pruning. Map reading/building supports cancellation.
 - Primary compute target is now CUDA on RTX 3060 Ti, per explicit user requirement;
   source implemented, device validation pending. CPU is reference/emergency fallback.
+- Default floor grid is 32 units for the GPU target; spacing remains configurable.
+
+## Fixed
+
+- Release cached compute/map resources on the worker during map replacement.
+- Clear stale error status after a successful analysis.
+- Align GPU ray endpoint tolerance with CPU float precision.
+
+## Validation
+
+- CUDA 13.0 Linux compile/link passes; portable and sanitizer checks pass.
+- Actual GPU parity is skipped here; Windows/RTX 3060 Ti and CS2 acceptance remain.

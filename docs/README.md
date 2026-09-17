@@ -6,8 +6,9 @@ Exposure gaps require reciprocal body visibility: the enemy can see the player
 while that player cannot see the enemy. Static geometry only; not Valve visibility.
 
 Portable geometry, reciprocal classification and asynchronous worker are implemented
-and tested. CUDA primary backend and parity tooling are implemented but not yet
-CUDA-built/device-tested; CPU is emergency fallback. Native commands, pose bridge and batched D3D11 overlay are implemented
+and tested. CUDA primary backend and parity tooling compile/link with CUDA 13.0
+on Linux; device execution is unverified. CPU is emergency fallback.
+Native commands, pose bridge and batched D3D11 overlay are implemented
 but have not been Windows-built or tested in CS2. Treat this as experimental source.
 
 ```sh
@@ -38,7 +39,7 @@ Windows/CS2 runtime validation is not available in this Linux development sessio
 In a demo, after loading the map, use:
 
 ```text
-mirv_udv load de_dust2 "C:/maps/de_dust2.tri" 64
+mirv_udv load de_dust2 "C:/maps/de_dust2.tri" 32
 mirv_udv vision 1
 mirv_udv status
 mirv_udv vision 0
@@ -48,6 +49,13 @@ Supply matching Awpy geometry yourself; assets are not included. First-person
 spectating is the default. See FEATURES for explicit targets and colors.
 Code: `AfxHookSource2/UDV/{Core,Worker,HlaeBridge,Overlay}.*`; portable tests and
 benchmark are alongside them. The project `AGENTS.md` is the session handoff.
+
+To continue on Windows, transfer this HLAE repository **with its local Git commits**.
+The enclosing workspace ignores `repos/`; moving/cloning only that wrapper loses
+the implementation. A Git bundle or your own fork can carry this history; nothing
+has been pushed. GPU parity must return 0 (77 means unavailable), then verify live
+POV/scoped FOV, floor/depth alignment, pause/seek/target/map changes, toggle-off,
+and frame times with CUDA enabled versus disabled. See COMPATIBILITY for evidence.
 
 See [architecture](ARCHITECTURE.md), [features](FEATURES.md),
 [compatibility](COMPATIBILITY.md), [changelog](CHANGELOG.md), and the

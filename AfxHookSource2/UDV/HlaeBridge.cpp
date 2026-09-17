@@ -158,7 +158,7 @@ void command(advancedfx::ICommandArgs* args) {
         clear(); enabled=value!=0; getWorker().enable(enabled); return;
     }
     if(sub=="load"&&(argc==4||argc==5)) {
-        float spacing=64;
+        float spacing=32;
         if(argc==5&&(!number(args->ArgV(4),spacing)||spacing<16||spacing>128)) {
             advancedfx::Warning("UDV: spacing must be 16..128\n"); return;
         }
@@ -195,7 +195,7 @@ void command(advancedfx::ICommandArgs* args) {
         advancedfx::Message("UDV: backend=%s GPU interval=%.3f ms (-1 if unavailable)\n",w.backend().c_str(),r?r->result.gpuMilliseconds:-1);
         return;
     }
-    advancedfx::Message("mirv_udv load <map name> <quoted TRI path> [spacing 16..128, default 64]\n"
+    advancedfx::Message("mirv_udv load <map name> <quoted TRI path> [spacing 16..128, default 32]\n"
         "mirv_udv vision 0|1\nmirv_udv target auto|<pawn/controller entity index>\n"
         "mirv_udv fov <explicit-target horizontal degrees>\nmirv_udv range <128..8000>\n"
         "mirv_udv color vision|gap <r g b a in 0..1>\nmirv_udv status\n"

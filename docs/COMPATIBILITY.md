@@ -27,3 +27,11 @@ CUDA toolkit detection preserves upstream builds without CUDA; use
 Runtime selects the first NVIDIA device with capability >=8.0. GPU execution
 is unverified. Match toolkit/driver/MSVC versions using NVIDIA's
 [Windows installation guide](https://docs.nvidia.com/cuda/archive/13.0.0/cuda-installation-guide-microsoft-windows/index.html).
+
+Validation record (2026-09-17): portable Release tests pass with GCC 13.3; ASan/UBSan
+tests pass with leak detection disabled because LeakSanitizer cannot run under this
+sandbox's ptrace. CUDA 13.0.48 compilation/linking passes, producing compute_80 PTX
+and sm_86 code. Compiler components were checksum-verified and unpacked in `/tmp`,
+not system-installed. The CUDA-linked portable test passes; actual-device tests
+return 77: driver unavailable/insufficient. That is a skip, not GPU validation.
+Full Windows host compilation, D3D shaders and CS2 execution remain unverified.

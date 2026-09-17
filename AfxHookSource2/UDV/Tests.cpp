@@ -88,6 +88,7 @@ int main() {
         check(Geometry::readTri(path.string()).size()==2,"TRI roundtrip");
         {
             Worker worker;
+            worker.backend(BackendMode::Cpu); // Deterministic lifecycle tests; device suite is separate.
             worker.load("fixture",path.string(),32);
             await([&]{return bool(worker.map());},"worker map load");
             worker.submit(p);

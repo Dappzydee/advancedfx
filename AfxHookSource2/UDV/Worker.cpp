@@ -12,6 +12,7 @@ Worker::~Worker() {
 void Worker::load(std::string name,std::string path,float spacing) {
     std::lock_guard<std::mutex> lock(mutex_);
     ++epoch_; ++serial_; pending_.reset(); latest_.reset(); map_.reset();
+    resetCompute_=true;
     load_=Load{std::move(name),std::move(path),spacing,epoch_.load()};
     status_="loading geometry"; wake_.notify_one();
 }
@@ -91,7 +92,7 @@ void Worker::run() {
                 }
                 frame->result.generation=job->serial;
                 std::lock_guard<std::mutex> lock(mutex_);
-                if(!cancel()&&enabled_) latest_=std::move(frame);
+                if(!cancel()&&enabled_) { latest_=std::move(frame); status_="ready"; }
             }
         } catch(const std::exception& e) {
             std::lock_guard<std::mutex> lock(mutex_);

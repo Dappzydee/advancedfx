@@ -9,7 +9,7 @@ Default color: red. Candidate surfaces are approximate walkable space.
 Commands: `mirv_udv load de_dust2 "C:/maps/de_dust2.tri" [spacing]`,
 `mirv_udv vision 1|0`, `mirv_udv target auto|<entity index>`, `mirv_udv status`.
 Load after the map starts; map initialization invalidates geometry.
-Default spacing 64, range 2,000 units; `mirv_udv range <128..8000>`.
+Default spacing 32, range 2,000 units; `mirv_udv range <128..8000>`.
 Automatic targeting follows first-person observer target and uses pre-override
 game camera FOV with HLAE's AlienSwarm aspect scaling. Explicit targets require
 `mirv_udv fov <horizontal degrees>` because their FOV need not match the camera.
@@ -28,9 +28,36 @@ evaluated per stance. Hypothetical enemy may face the analyzed player.
 
 ## GPU analysis
 
-Status: Implemented source; CUDA build/device validation pending.
+Status: CUDA source compiled/linked on Linux; device and Windows validation pending.
 Primary target: RTX 3060 Ti; CPU is emergency fallback.
 `mirv_udv backend auto` prefers CUDA and records any fallback reason in status.
 `mirv_udv backend cuda` is strict; `mirv_udv backend cpu` forces the reference path.
 Backend changes invalidate old work. Status includes backend/device and GPU timing.
 10 Hz submission throttling remains. GPU contention must be measured on Windows.
+
+## Accuracy scope
+
+Level 1 approximation. Five samples: head, chest, pelvis and two lateral chest
+points; any visible sample suffices. Standing/crouching enemy eye heights are
+64/46 units; player body height derives from current eye-to-origin height.
+Lateral samples currently lie on the world X axis, not animated model shoulders.
+FOV is rectangular perspective; hypothetical enemies may orient toward the player.
+Positions within 32 units of the player are excluded as overlapping hulls.
+
+| State | First version |
+| --- | --- |
+| Static world | User-supplied matching TRI; two-sided segment occlusion |
+| Candidate floors | Slope <=45 degrees, grid, approximate support/headroom probes |
+| Standing/crouching | Separate stance masks; gap priority across stances |
+| Doors, breakables, dynamic props | Only their baked TRI representation, if present; no runtime changes |
+| Smokes, molotovs, other utility | Ignored |
+| Other players as occluders | Ignored |
+| Boosts/jumps | No hypothetical airborne candidates |
+| Exact models/bones/hitboxes | Not implemented |
+
+Arms-only, feet-only and tiny slivers can be missed. Head-glitches are approximate;
+weapon protrusion does not count. Model differences and animations are ignored.
+Candidate probes do not establish reachability or perform a swept player hull:
+roofs/inaccessible surfaces can pass. Floor squares may extend beyond support
+edges and are diagnostic area samples, not exact walkable polygons. TRI map
+version and visible render surfaces can disagree. No Valve-exact visibility claim.

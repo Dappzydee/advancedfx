@@ -9,6 +9,20 @@ int main(int argc,char** argv) {
         std::unique_ptr<udv::Compute> gpu;
         try { gpu=udv::makeCompute(udv::BackendMode::Cuda,reason); }
         catch(const std::exception& e) { std::cerr<<"SKIP: GPU validation unavailable: "<<e.what()<<'\n'; return 77; }
+        // Exercise occlusion/asymmetry on-device, not only open-space arithmetic.
+        for(int scenario=0;scenario<4;++scenario) {
+            std::vector<udv::Triangle> triangles;
+            if(scenario>=2) {
+                const float x=scenario==2?50.0f:10.0f,low=scenario==2?-100.0f:50.0f;
+                triangles={{{x,-500,low},{x,500,low},{x,500,200}},{{x,-500,low},{x,500,200},{x,-500,200}}};
+            }
+            auto fixture=std::make_shared<udv::Map>("fixture",udv::Geometry(std::move(triangles)),32,udv::Cancel{});
+            fixture->candidates={{{scenario==1?-100.0f:100.0f,0,0},{0,0,1},udv::Standing}};
+            udv::Pose p; p.eye={0,0,64};
+            auto result=gpu->run(fixture,p,2000,{});
+            const auto expected=scenario==0?udv::Area::Vision:scenario==2?udv::Area::None:udv::Area::Gap;
+            if(result.classes.size()!=1||result.classes[0].area()!=expected) throw std::runtime_error("GPU semantic fixture failed");
+        }
         std::shared_ptr<udv::Map> map;
         if(argc>1) map=std::make_shared<udv::Map>("validation",udv::Geometry(udv::Geometry::readTri(argv[1])),argc>2?std::stof(argv[2]):32,udv::Cancel{});
         else {

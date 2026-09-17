@@ -69,8 +69,10 @@ Inherited HLAE hooks can break after CS2 updates. Fail closed when state invalid
 ## 16. Licensing findings
 HLAE root LICENSE is MIT. No explicit UDV1 license found: no source copied.
 Awpy format inspected in https://awpy.readthedocs.io/en/latest/_modules/awpy/visibility.html .
-Warp upstream https://github.com/NVIDIA/warp documents Apache-2.0; neither Warp
-is redistributed or linked. The optional CUDA backend links static cudart;
+Awpy's [maintainer-published package](https://pypi.org/project/awpy/) declares MIT.
+No Awpy code is copied or bundled; the binary format is independently implemented.
+Warp upstream https://github.com/NVIDIA/warp documents Apache-2.0; Warp
+is not redistributed or linked. The optional CUDA backend links static cudart;
 redistribution must follow NVIDIA toolkit terms. No toolkit binaries or map assets
 are committed. Map assets remain user supplied.
 ## 17. Uncertainties
@@ -102,4 +104,9 @@ shader execution, geometry alignment and CS2 lifecycle/frame-time acceptance
 remain unverified. No new signatures/offsets introduced. The existing HLAE
 `misc/mirv-script/src/snippets/mirv_script_view.ts` also identifies in-eye mode 2.
 CUDA backend source and strict-device parity tool implemented; host-executed
-kernel algorithm parity passes. CUDA compilation and execution still pending.
+kernel algorithm parity passes. CUDA 13.0.48 / GCC 13.3 Linux compile/link succeeds
+for Ampere PTX and sm_86. Actual-device tool exits 77 here (CUDA driver unavailable
+or insufficient), so GPU parity/performance and full Windows host runtime remain
+outstanding. ASan/UBSan pass with LeakSanitizer disabled for sandbox compatibility.
+User explicitly prioritizes GPU; 32-unit default spacing supersedes initial 64.
+Benchmark map SHA256: `f87504f1a56b04ae70d0872cabf7dc73443439be615dfb88d7d5f42892c09a51`.

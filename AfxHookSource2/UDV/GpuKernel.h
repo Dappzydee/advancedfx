@@ -50,7 +50,7 @@ UDV_HD inline bool triangle(const Triangle& t,Vec3 o,Vec3 d,float high) {
     const double v=dp(d,q)/determinant;
     if(v<0||u+v>1) return false;
     const double distance=dp(f,q)/determinant;
-    return distance>=0.01&&distance<=high;
+    return distance>=double(0.01f)&&distance<=high;
 }
 UDV_HD inline bool blocked(Scene scene,Vec3 from,Vec3 to) {
     Vec3 d=sub(to,from); const float len=sqrtf(dp(d,d));
