@@ -1,8 +1,20 @@
 #include "Core.h"
+#include "Worker.h"
+#include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <thread>
 #include <iostream>
 #include <stdexcept>
 using namespace udv;
 static void check(bool value,const char* name) { if(!value) throw std::runtime_error(name); }
+template<class F> static void await(F fn,const char* name) {
+    const auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);
+    while(!fn()) {
+        if(std::chrono::steady_clock::now()>end) throw std::runtime_error(name);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+}
 static std::vector<Triangle> wall(float x,float low,float high) {
     return {{{x,-500,low},{x,500,low},{x,500,high}},{{x,-500,low},{x,500,high},{x,-500,high}}};
 }
@@ -41,6 +53,40 @@ int main() {
         check(result.classes.size()==49&&result.tested>0,"analysis");
         check(analyze(floor,candidates,p,1000,[]{return true;}).classes.empty(),"analysis cancellation");
         check(generateCandidates(floor,32,[]{return true;}).empty(),"candidate cancellation");
+        const auto path=std::filesystem::temp_directory_path()/
+            ("udv-test-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count())+".tri");
+        {
+            std::ofstream file(path,std::ios::binary);
+            for(const auto& t:floor.triangles()) {
+                for(auto v:{t.a,t.b,t.c}) for(float f:{v.x,v.y,v.z}) file.write(reinterpret_cast<const char*>(&f),4);
+            }
+        }
+        check(Geometry::readTri(path.string()).size()==2,"TRI roundtrip");
+        {
+            Worker worker;
+            worker.load("fixture",path.string(),32);
+            await([&]{return bool(worker.map());},"worker map load");
+            worker.submit(p);
+            check(!worker.latest(),"disabled worker does not publish");
+            worker.enable(true); p.tick=10; worker.submit(p);
+            await([&]{return bool(worker.latest());},"worker publishes");
+            check(worker.latest()->result.pose.tick==10,"result tick");
+            worker.invalidate();
+            check(!worker.latest(),"seek clears published result");
+            for(int i=11;i<100;++i) { p.tick=i; worker.submit(p); }
+            await([&]{auto r=worker.latest();return r&&r->result.pose.tick==99;},"latest wins");
+            worker.enable(false); check(!worker.latest(),"disable clears result");
+            worker.invalidate(true); check(!worker.map(),"unload clears map");
+            worker.load("bad",path.string()+".missing",32);
+            await([&]{return worker.status()=="Cannot open TRI file";},"load failure reported");
+        }
+        {
+            std::ofstream file(path,std::ios::binary|std::ios::app); file.put('x');
+        }
+        bool rejected=false;
+        try { Geometry::readTri(path.string()); } catch(const std::exception&) { rejected=true; }
+        check(rejected,"partial TRI rejected");
+        std::filesystem::remove(path);
         std::cout<<"UDV semantics, FOV, segments, candidates and cancellation passed\n";
     } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }
 }

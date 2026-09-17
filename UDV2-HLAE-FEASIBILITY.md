@@ -51,7 +51,11 @@ One worker, one pending pose, immutable map/results, cancellation generation.
 No game entity or D3D calls from worker; no analysis on renderer.
 ## 14. Performance analysis
 UDV1 CHANGELOG reports 0.301 s for 32 Dust II poses on RTX 3060 Ti; not reproduced
-and not evidence of live single-pose latency. Native measurements pending.
+and not evidence of live single-pose latency. Native initial Release benchmark:
+513,783 Dust II triangles, 55,109 candidates at spacing 32, median 188.5 ms,
+max 602.4 ms across 20 synthetic poses (2,000-unit range, both stances).
+Spacing 64: 13,396 candidates, median 108.4 ms, max 308.0 ms. These initial
+median-split BVH results motivate traversal optimization; not CS2 frame measurements.
 ## 15. Maintenance / compatibility risk
 Inherited HLAE hooks can break after CS2 updates. Fail closed when state invalid.
 ## 16. Licensing findings
@@ -79,4 +83,7 @@ TRI validation; candidate support; cancellation, disable, seek and target reset.
 `AfxHookSource2/UDV/`, host CMake and minimal callbacks in main/render hooks;
 this report and five docs files.
 ## 24. Current implementation status
-Research/documentation bootstrap only. No runtime functionality claimed yet.
+Portable core and worker built with GCC 13.3 Release. Tests pass for required
+visibility cases, FOV, finite segments, floor candidates, cancellation, latest-only
+publication, disable/unload, map load failure and malformed TRI. Host integration
+in progress; no native CS2 runtime functionality verified.
