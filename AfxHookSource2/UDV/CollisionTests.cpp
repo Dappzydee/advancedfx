@@ -102,8 +102,10 @@ int main() {
         Pose p; p.eye={0,0,64}; worker.submit(p);
         await([&]{return bool(worker.latest());});
         invalid.shapes[0].sight=SightPolicy::BlocksSight;
+        invalid.shapes[0].id=9876543210ULL;
+        invalid.shapes.insert(invalid.shapes.begin(),floor);
         worker.loadScene(invalid);
-        await([&]{return worker.status()=="Unsupported sight-blocking shape";});
+        await([&]{return worker.status()=="Collision shape[1] id=9876543210: Unsupported sight-blocking shape";});
         check(!worker.latest()&&!worker.map(),"Invalid scene cannot expose stale or incomplete results");
         std::cout<<"Collision conversion, transforms, validation and worker tests passed\n";
     } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }

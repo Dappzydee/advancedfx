@@ -2,6 +2,8 @@
 
 ## Added
 
+- Collision conversion diagnostics include shape index/ID and the underlying error;
+  a worker regression checks a failing second shape with a 64-bit ID.
 - Owned collision-scene conversion for indexed meshes and ordered convex faces,
   affine transforms, fail-closed validation and asynchronous worker ingestion.
   Standalone fixtures cover transforms, malformed/unsupported inputs, cancellation

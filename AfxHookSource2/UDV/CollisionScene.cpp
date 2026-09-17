@@ -23,7 +23,9 @@ std::vector<Triangle> convertCollision(const CollisionScene& scene,const Cancel&
     require(!scene.mapName.empty(),"Collision snapshot has no map identity");
     require(scene.shapes.size()<=100000,"Too many collision shapes");
     std::vector<Triangle> out;
-    for(const auto& shape:scene.shapes) {
+    size_t shapeIndex=0;
+    try { for(;shapeIndex<scene.shapes.size();++shapeIndex) {
+        const auto& shape=scene.shapes[shapeIndex];
         cancelled(cancel);
         require(shape.sight!=SightPolicy::Unresolved,"Unresolved collision sight policy");
         if(shape.sight==SightPolicy::NonOccluding) continue;
@@ -71,6 +73,9 @@ std::vector<Triangle> convertCollision(const CollisionScene& scene,const Cancel&
                 for(size_t i=1;i+1<points.size();++i) append(out,points[0],points[i],points[i+1]);
             }
         }
+    } } catch(const std::runtime_error& error) {
+        throw std::runtime_error("Collision shape["+std::to_string(shapeIndex)+"] id="+
+            std::to_string(scene.shapes[shapeIndex].id)+": "+error.what());
     }
     cancelled(cancel);
     return out;

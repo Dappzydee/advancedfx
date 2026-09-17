@@ -35,6 +35,8 @@ occluders. Only explicitly non-occluding shapes may be skipped. Failure publishe
 no partial scene; replacement clears stale results. Budgets and cancellation bound
 conversion. Face checks do not establish closed hulls or whole-hull convexity;
 spheres/capsules and native material/content policy are not implemented.
+Shape-level conversion errors include the zero-based snapshot index and producer
+shape ID in worker status, preserving the underlying reason for adapter debugging.
 
 `Compute.*` selects CUDA first in auto mode. `CudaCompute.cu` keeps triangles,
 BVH, ordering and candidates resident on the GPU in a low-priority nonblocking
