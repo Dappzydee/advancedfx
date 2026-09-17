@@ -104,6 +104,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     UDV/HlaeBridge.cpp
     UDV/Overlay.cpp
     UDV/Compute.cpp
+    UDV/CollisionScene.cpp
     ../deps/release/Detours/src/detours.cpp
     ../deps/release/Detours/src/detours.h
     ../deps/release/Detours/src/detver.h

@@ -60,8 +60,8 @@ Do not claim native runtime success from portable tests alone.
 
 ## Current next step
 
-Implement/test owned mesh/hull conversion offline, then investigate the native
-Windows CS2 collision snapshot producer without launching the game. Do not
-invent ABI offsets or claim snapshot-input tests validate extraction. Then run
-strict CUDA parity and live CS2 acceptance. Linux CUDA compile/link already passes.
+Investigate native Windows CS2 collision access/ownership offline; owned mesh/face
+conversion and worker ingestion are tested. Do not invent ABI offsets or claim
+these tests validate extraction. Windows host build and strict CUDA parity remain;
+live CS2 acceptance requires separate explicit authorization.
 Transfer this nested repository's Git history; the wrapper ignores `repos/`.

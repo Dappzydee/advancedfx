@@ -1,6 +1,7 @@
 #pragma once
 #include "Core.h"
 #include "Compute.h"
+#include "CollisionScene.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -32,6 +33,7 @@ public:
     // Owns world-space collision triangles; no engine pointers cross threads.
     // The adapter must capture a coherent scene on an engine-safe callback.
     void loadSnapshot(std::string name,uint64_t revision,std::vector<Triangle> triangles,float spacing=32);
+    void loadScene(CollisionScene scene,float spacing=32);
     void enable(bool value);
     void invalidate(bool unload=false);
     void submit(Pose pose,float range=2000);
@@ -48,6 +50,7 @@ private:
         uint64_t epoch;
         std::optional<std::vector<Triangle>> triangles;
         uint64_t revision=0;
+        std::optional<CollisionScene> scene;
     };
     struct Job { Pose pose; float range; uint64_t epoch,serial; };
     mutable std::mutex mutex_;

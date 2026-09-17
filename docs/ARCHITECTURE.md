@@ -5,7 +5,7 @@ Implemented pipeline (host runtime validation outstanding):
 ```text
 HLAE demo/player state -> immutable pose -> latest-only analysis worker
                                               ^          |
-                                      static TRI + BVH   v
+                                    owned scene + BVH   v
 HLAE world render hook <- immutable classified floor markers
 ```
 
@@ -25,6 +25,16 @@ this path without reading files. The native CS2 producer remains outstanding;
 do not mistake the input API for working game extraction. Raw engine pointers
 must never be retained by CUDA or the worker. A future producer must resolve
 scene ownership, material/content filtering, transforms, and update lifecycle.
+
+`CollisionScene.*` defines UDV-owned meshes and ordered convex face loops, not an
+engine ABI. `Worker::loadScene` converts local vertices using affine transforms on
+the worker, then builds the same BVH/candidates and CUDA input. Conversion rejects
+invalid indices, nonfinite/bounded coordinates, singular transforms, degenerate
+triangles, nonplanar/nonconvex faces, unresolved sight policies and unsupported
+occluders. Only explicitly non-occluding shapes may be skipped. Failure publishes
+no partial scene; replacement clears stale results. Budgets and cancellation bound
+conversion. Face checks do not establish closed hulls or whole-hull convexity;
+spheres/capsules and native material/content policy are not implemented.
 
 `Compute.*` selects CUDA first in auto mode. `CudaCompute.cu` keeps triangles,
 BVH, ordering and candidates resident on the GPU in a low-priority nonblocking

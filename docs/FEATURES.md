@@ -40,6 +40,9 @@ Backend changes invalidate old work. Status includes backend/device and GPU timi
 Direct runtime collision extraction: **not implemented**. In-memory collision
 snapshots and revision replacement are tested, but no CS2 callback supplies them
 yet. The external TRI importer remains available for diagnostics only.
+Owned indexed meshes and ordered convex faces can now be transformed/triangulated
+on the worker. Unknown sight policy or unsupported occluders reject the scene;
+this does not implement native extraction or runtime content/material filtering.
 
 Level 1 approximation. Five samples: head, chest, pelvis and two lateral chest
 points; any visible sample suffices. Standing/crouching enemy eye heights are
@@ -50,7 +53,7 @@ Positions within 32 units of the player are excluded as overlapping hulls.
 
 | State | First version |
 | --- | --- |
-| Static world | User-supplied matching TRI; two-sided segment occlusion |
+| Static world | Owned scene/snapshot API, or diagnostic TRI; two-sided segment occlusion; native producer missing |
 | Candidate floors | Slope <=45 degrees, grid, approximate support/headroom probes |
 | Standing/crouching | Separate stance masks; gap priority across stances |
 | Doors, breakables, dynamic props | Only their baked TRI representation, if present; no runtime changes |

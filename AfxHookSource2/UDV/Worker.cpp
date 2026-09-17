@@ -13,14 +13,20 @@ void Worker::load(std::string name,std::string path,float spacing) {
     std::lock_guard<std::mutex> lock(mutex_);
     ++epoch_; ++serial_; pending_.reset(); latest_.reset(); map_.reset();
     resetCompute_=true;
-    load_=Load{std::move(name),std::move(path),spacing,epoch_.load(),std::nullopt,0};
+    load_=Load{std::move(name),std::move(path),spacing,epoch_.load(),std::nullopt,0,std::nullopt};
     status_="loading geometry"; wake_.notify_one();
 }
 void Worker::loadSnapshot(std::string name,uint64_t revision,std::vector<Triangle> triangles,float spacing) {
     std::lock_guard<std::mutex> lock(mutex_);
     ++epoch_; ++serial_; pending_.reset(); latest_.reset(); map_.reset(); resetCompute_=true;
-    load_=Load{std::move(name),{},spacing,epoch_.load(),std::move(triangles),revision};
+    load_=Load{std::move(name),{},spacing,epoch_.load(),std::move(triangles),revision,std::nullopt};
     status_="building collision snapshot"; wake_.notify_one();
+}
+void Worker::loadScene(CollisionScene scene,float spacing) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    ++epoch_; ++serial_; pending_.reset(); latest_.reset(); map_.reset(); resetCompute_=true;
+    load_=Load{scene.mapName,{},spacing,epoch_.load(),std::nullopt,scene.revision,std::move(scene)};
+    status_="converting collision scene"; wake_.notify_one();
 }
 void Worker::enable(bool value) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -72,10 +78,11 @@ void Worker::run() {
             if(reset) compute.reset();
             if(load) {
                 auto cancel=[&]{return stop_||epoch_!=load->epoch;};
-                auto triangles=load->triangles ? std::move(*load->triangles):Geometry::readTri(load->path,cancel);
+                auto triangles=load->scene ? convertCollision(*load->scene,cancel):
+                    load->triangles ? std::move(*load->triangles):Geometry::readTri(load->path,cancel);
                 if(!cancel()) {
                     auto built=std::make_shared<Map>(load->name,Geometry(std::move(triangles),cancel),load->spacing,cancel);
-                    built->fromSnapshot=load->triangles.has_value(); built->collisionRevision=load->revision;
+                    built->fromSnapshot=load->triangles.has_value()||load->scene.has_value(); built->collisionRevision=load->revision;
                     std::lock_guard<std::mutex> lock(mutex_);
                     if(!cancel()) { map_=std::move(built); status_="ready"; }
                 }

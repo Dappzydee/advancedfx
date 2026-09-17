@@ -2,6 +2,11 @@
 
 ## Added
 
+- Owned collision-scene conversion for indexed meshes and ordered convex faces,
+  affine transforms, fail-closed validation and asynchronous worker ingestion.
+  Standalone fixtures cover transforms, malformed/unsupported inputs, cancellation
+  and stale-result removal after scene failure. No native engine ABI is assumed.
+
 - In-memory collision snapshot input, provenance/revision tracking and replacement
   tests. Native CS2 collision extraction itself is still outstanding.
 

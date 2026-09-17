@@ -111,6 +111,12 @@ TRI validation; candidate support; cancellation, disable, seek and target reset.
 `AfxHookSource2/UDV/`, host CMake and minimal callbacks in main/render hooks;
 this report and five docs files.
 ## 24. Current implementation status
+Offline scene conversion is implemented: owned indexed meshes/ordered convex faces,
+affine transforms and strict validation feed `Worker::loadScene`, with no external
+files or engine pointers. Synthetic Release and sanitizer tests cover conversion
+and failed-replacement invalidation. Closed-hull validation, spheres/capsules and
+native sight-blocking policy are not implemented. This is adapter preparation,
+not proof of native extraction.
 Native-source preparation: `Worker::loadSnapshot` accepts owned collision triangles
 and revision, bypasses file parsing, and invalidates old results on updates. Tests
 cover analysis and replacement without TRI. Actual running-game extraction is

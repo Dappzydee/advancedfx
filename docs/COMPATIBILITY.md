@@ -39,6 +39,8 @@ and sm_86 code. Compiler components were checksum-verified and unpacked in `/tmp
 not system-installed. The CUDA-linked portable test passes; actual-device tests
 return 77: driver unavailable/insufficient. That is a skip, not GPU validation.
 Full Windows host compilation, D3D shaders and CS2 execution remain unverified.
+The owned collision-conversion suite also passes in CUDA-linked Release and
+ASan/UBSan builds. It uses synthetic data only, not engine extraction or execution.
 
 Native collision research: HLAE's inspected Source2 code/SDK contains no usable
 trace or world-geometry extraction wrapper. Local Linux `libvphysics2.so` exports

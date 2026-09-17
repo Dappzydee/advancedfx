@@ -7,6 +7,7 @@ while that player cannot see the enemy. Static geometry only; not Valve visibili
 
 Current product requirement: obtain collision directly from the running game,
 without external TRI assets. The in-memory snapshot input is implemented/tested;
+Owned mesh/convex-face conversion is also implemented/tested, without file input;
 the CS2 collision extractor is **not implemented**. The TRI command below is the
 existing diagnostic path, not completion of that requirement.
 
@@ -50,7 +51,8 @@ mirv_udv status
 mirv_udv vision 0
 ```
 
-Supply matching Awpy geometry yourself; assets are not included. First-person
+For that diagnostic command, supply matching raw TRI geometry; assets are not
+included. Awpy/Trimesh are not dependencies. First-person
 spectating is the default. See FEATURES for explicit targets and colors.
 Code: `AfxHookSource2/UDV/{Core,Worker,HlaeBridge,Overlay}.*`; portable tests and
 benchmark are alongside them. The project `AGENTS.md` is the session handoff.
