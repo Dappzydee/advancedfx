@@ -2,6 +2,7 @@
 
 #include "addresses.h"
 #include "CampathDrawer.h"
+#include "UDV/HlaeBridge.h"
 #include "ClientEntitySystem.h"
 #include "GameEvents.h"
 #include "hlaeFolder.h"
@@ -658,6 +659,7 @@ bool CS2_Client_CSetupView_Trampoline_IsPlayingDemo(void *ThisCViewSetup) {
 	float Ry = pViewAngles[1];
 	float Rz = pViewAngles[2];
 	float Fov = *pFov;
+	udv::capturePose(pViewOrigin, pViewAngles, Fov, width, height);
 
 	//advancedfx::Message("Console: %i [%ix%i]\n", (g_pGameUIService->Con_IsVisible()?1:0),width,height);
 
@@ -979,6 +981,7 @@ void __fastcall New_CViewRender_UnkMakeMatrix(void* This) {
 	g_WorldToScreenMatrix.m[3][3] = proj[4*3+3];
 
 	g_CampathDrawer.OnEngineThread_SetupViewDone();
+	udv::captureMatrix(&g_WorldToScreenMatrix.m[0][0]);
 }
 
 /*
@@ -1372,6 +1375,7 @@ CON_COMMAND(__mirv_print_search_paths, "")
 typedef void(* CCS2_Client_Shutdown_t)(void* This);
 CCS2_Client_Shutdown_t old_CCS2_Client_Shutdown;
 void new_CCS2_Client_Shutdown(void* This) {
+	udv::shutdown();
 	AfxHookSource2Rs_Engine_Shutdown();
 
 	old_CCS2_Client_Shutdown(This);
@@ -1440,6 +1444,7 @@ extern void resetCachedMaterials();
 typedef void * (* CS2_Client_LevelInitPreEntity_t)(void* This, void * pUnk1, void * pUnk2);
 CS2_Client_LevelInitPreEntity_t old_CS2_Client_LevelInitPreEntity;
 void * new_CS2_Client_LevelInitPreEntity(void* This, void * pUnk1, void * pUnk2) {
+	udv::levelReset();
 	resetDefaultCloudColors();
 	resetCachedMaterials();
 	void * result = old_CS2_Client_LevelInitPreEntity(This, pUnk1, pUnk2);
@@ -1454,6 +1459,7 @@ CS2_Client_FrameStageNotify_t old_CS2_Client_FrameStageNotify;
 bool g_bForceClInterpRatio = true;
 
 void  new_CS2_Client_FrameStageNotify(void* This, SOURCESDK::CS2::ClientFrameStage_t curStage) {
+	udv::checkDemo();
 	
 	AfxHookSource2Rs_Engine_RunJobQueue();
 

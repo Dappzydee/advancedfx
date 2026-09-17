@@ -98,6 +98,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 target_sources(${PROJECT_NAME} PRIVATE
+    UDV/Core.cpp
+    UDV/Worker.cpp
+    UDV/HlaeBridge.cpp
     ../deps/release/Detours/src/detours.cpp
     ../deps/release/Detours/src/detours.h
     ../deps/release/Detours/src/detver.h
