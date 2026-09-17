@@ -35,6 +35,8 @@ See `docs/ARCHITECTURE.md`; Windows/CS2 validation is still outstanding.
 - GPU is the primary compute backend; CPU is only the correctness reference and
   emergency fallback. Target PC is Windows with RTX 3060 Ti; laptop timings are
   not grounds for dropping GPU implementation.
+- Production collision must come directly from CS2, without external TRI assets.
+  Snapshot ingestion is implemented; the native producer is not. TRI is diagnostic.
 - Preserve unrelated user changes and work in coherent vertical slices.
 - Build/test before declaring a milestone complete; distinguish portable tests,
   static inspection, Windows builds and live CS2 verification.
@@ -53,6 +55,7 @@ Do not claim native runtime success from portable tests alone.
 
 ## Current next step
 
-Run strict CUDA parity tests on the Windows RTX 3060 Ti PC, then build HLAE and
-validate live CS2. Linux CUDA compile/link and portable tests are already complete.
+Implement and validate the native Windows CS2 collision snapshot producer. Do not
+invent ABI offsets or claim snapshot-input tests validate extraction. Then run
+strict CUDA parity and live CS2 acceptance. Linux CUDA compile/link already passes.
 Transfer this nested repository's Git history; the wrapper ignores `repos/`.

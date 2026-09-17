@@ -11,6 +11,8 @@
 namespace udv {
 struct Map {
     std::string name;
+    uint64_t collisionRevision=0;
+    bool fromSnapshot=false;
     Geometry geometry;
     std::vector<Candidate> candidates;
     float spacing;
@@ -27,6 +29,9 @@ public:
     Worker(const Worker&)=delete;
     Worker& operator=(const Worker&)=delete;
     void load(std::string name,std::string path,float spacing);
+    // Owns world-space collision triangles; no engine pointers cross threads.
+    // The adapter must capture a coherent scene on an engine-safe callback.
+    void loadSnapshot(std::string name,uint64_t revision,std::vector<Triangle> triangles,float spacing=32);
     void enable(bool value);
     void invalidate(bool unload=false);
     void submit(Pose pose,float range=2000);
@@ -37,7 +42,13 @@ public:
     std::string status() const;
     bool busy() const { return busy_.load(); }
 private:
-    struct Load { std::string name,path; float spacing; uint64_t epoch; };
+    struct Load {
+        std::string name,path;
+        float spacing;
+        uint64_t epoch;
+        std::optional<std::vector<Triangle>> triangles;
+        uint64_t revision=0;
+    };
     struct Job { Pose pose; float range; uint64_t epoch,serial; };
     mutable std::mutex mutex_;
     std::condition_variable wake_;

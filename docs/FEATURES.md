@@ -37,6 +37,10 @@ Backend changes invalidate old work. Status includes backend/device and GPU timi
 
 ## Accuracy scope
 
+Direct runtime collision extraction: **not implemented**. In-memory collision
+snapshots and revision replacement are tested, but no CS2 callback supplies them
+yet. The external TRI importer remains available for diagnostics only.
+
 Level 1 approximation. Five samples: head, chest, pelvis and two lateral chest
 points; any visible sample suffices. Standing/crouching enemy eye heights are
 64/46 units; player body height derives from current eye-to-origin height.

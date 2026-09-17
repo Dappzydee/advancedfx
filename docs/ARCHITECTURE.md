@@ -18,6 +18,14 @@ pose. Epoch/serial checks cancel obsolete analysis and reject stale publication.
 Map loading runs on the worker too. Disable clears results; unload discards map.
 Readers copy immutable shared pointers under short locks, never wait for analysis.
 
+Geometry input is independent of TRI: `Worker::loadSnapshot` accepts owned
+world-space triangles and a collision revision, builds the BVH/candidates on the
+worker, and invalidates old results/device geometry on replacement. Tests exercise
+this path without reading files. The native CS2 producer remains outstanding;
+do not mistake the input API for working game extraction. Raw engine pointers
+must never be retained by CUDA or the worker. A future producer must resolve
+scene ownership, material/content filtering, transforms, and update lifecycle.
+
 `Compute.*` selects CUDA first in auto mode. `CudaCompute.cu` keeps triangles,
 BVH, ordering and candidates resident on the GPU in a low-priority nonblocking
 stream owned by the worker. Batches of 2,048 candidates bound submitted work;
@@ -49,6 +57,15 @@ follow candidate slope and sit 0.75 units above it. This is a sampled area overl
 not a continuous navmesh fill. Device reset drops cached resources.
 
 ## Key decisions
+
+### 2026-09-17 — Direct game collision is required
+
+Reason: explicit user correction removes external TRI as a product dependency.
+Consequences: retain TRI only as a diagnostic fixture importer. Reuse CUDA/BVH,
+semantics, worker and renderer with snapshots from an isolated native adapter.
+Native traces may be a correctness oracle; moving all classification to engine
+CPU traces would violate the GPU-primary requirement. Dynamic scene updates and
+collision-vs-visibility filtering must be verified rather than inferred.
 
 ### 2026-09-17 — CPU correctness first
 

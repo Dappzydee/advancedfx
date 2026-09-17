@@ -35,3 +35,10 @@ and sm_86 code. Compiler components were checksum-verified and unpacked in `/tmp
 not system-installed. The CUDA-linked portable test passes; actual-device tests
 return 77: driver unavailable/insufficient. That is a skip, not GPU validation.
 Full Windows host compilation, D3D shaders and CS2 execution remain unverified.
+
+Native collision research: HLAE's inspected Source2 code/SDK contains no usable
+trace or world-geometry extraction wrapper. Local Linux `libvphysics2.so` exports
+CreateInterface and RnMeshCreate/Clone; it contains `VPhysics2_Interface_001`.
+These observations do not establish Windows ABI, scene enumeration or ownership.
+No guessed physics offsets/vtables were added. Native producer integration must
+be validated against the target Windows CS2 build before calling engine methods.

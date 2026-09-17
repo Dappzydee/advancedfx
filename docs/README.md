@@ -5,6 +5,11 @@ plausible enemy floor positions visible from the selected player's current POV.
 Exposure gaps require reciprocal body visibility: the enemy can see the player
 while that player cannot see the enemy. Static geometry only; not Valve visibility.
 
+Current product requirement: obtain collision directly from the running game,
+without external TRI assets. The in-memory snapshot input is implemented/tested;
+the CS2 collision extractor is **not implemented**. The TRI command below is the
+existing diagnostic path, not completion of that requirement.
+
 Portable geometry, reciprocal classification and asynchronous worker are implemented
 and tested. CUDA primary backend and parity tooling compile/link with CUDA 13.0
 on Linux; device execution is unverified. CPU is emergency fallback.

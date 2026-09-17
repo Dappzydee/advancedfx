@@ -102,6 +102,15 @@ int main() {
             await([&]{auto r=worker.latest();return r&&r->result.pose.tick==99;},"latest wins");
             worker.enable(false); check(!worker.latest(),"disable clears result");
             worker.invalidate(true); check(!worker.map(),"unload clears map");
+            // Full worker path with geometry supplied directly in memory, no TRI read.
+            worker.loadSnapshot("runtime-fixture",7,floor.triangles());
+            await([&]{return bool(worker.map());},"collision snapshot load");
+            check(worker.map()->fromSnapshot&&worker.map()->collisionRevision==7,"snapshot provenance");
+            worker.enable(true); p.tick=100; worker.submit(p);
+            await([&]{return bool(worker.latest());},"snapshot analysis publishes");
+            worker.loadSnapshot("runtime-fixture",8,floor.triangles());
+            check(!worker.latest(),"collision update invalidates results");
+            await([&]{auto m=worker.map();return m&&m->collisionRevision==8;},"collision revision replacement");
             worker.load("bad",path.string()+".missing",32);
             await([&]{return worker.status()=="Cannot open TRI file";},"load failure reported");
         }

@@ -2,6 +2,9 @@
 
 ## Added
 
+- In-memory collision snapshot input, provenance/revision tracking and replacement
+  tests. Native CS2 collision extraction itself is still outstanding.
+
 - UDV2 architecture, feature definitions and compatibility baseline.
 - Portable TRI/BVH, floor support/headroom sampling, rectangular FOV and
   reciprocal standing/crouching visibility.
@@ -15,6 +18,9 @@
 - Host-executed GPU algorithm parity and actual-device validation executable.
 
 ## Changed
+
+- Product requires direct game collision data; TRI becomes a diagnostic importer,
+  not the intended production source.
 
 - Binned-SAH BVH and conservative bounds improve CPU fallback traversal; exhaustive
   ray checks cover hierarchy pruning. Map reading/building supports cancellation.

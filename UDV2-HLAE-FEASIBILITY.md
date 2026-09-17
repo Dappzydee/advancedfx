@@ -28,6 +28,9 @@ UnkMakeMatrix supplies g_WorldToScreenMatrix. `CampathDrawer.cpp` illustrates
 deferred-context rendering and engine/render handoff; `RenderSystemDX11Hooks.cpp`
 has the world overlay draw site.
 ## 7. Candidate-position strategy
+UPDATE: user requires direct game collision, so the original TRI-based product
+choice below is superseded. Candidate generation can consume in-memory native
+triangle snapshots without changing the classifier. The actual extractor is missing.
 Choose static TRI floor sampling with slope, support and clearance heuristics.
 Nav is more playable but no verified HLAE nav API. Runtime collision needs new
 reverse engineering. A future hybrid can replace LOS without replacing semantics.
@@ -76,6 +79,12 @@ is not redistributed or linked. The optional CUDA backend links static cudart;
 redistribution must follow NVIDIA toolkit terms. No toolkit binaries or map assets
 are committed. Map assets remain user supplied.
 ## 17. Uncertainties
+BLOCKER for native completion: no verified Windows client physics-world access,
+shape enumeration ABI or snapshot-safe callback in the inspected HLAE checkout.
+Linux library exports establish a physics module but not a portable callable ABI.
+The [AlliedModders tracker](https://github.com/alliedmodders/hl2sdk/issues/132)
+identifies CGamePhysicsQueryInterface/IVPhysics2World as research leads; it does
+not verify a compatible HLAE client adapter. No code copied from that project.
 UNKNOWN: current CS2 build, live draw alignment, frame cost and scoped FOV behavior.
 ## 18. Potential issues
 Floor heuristics include inaccessible surfaces. Static map versions can disagree
@@ -95,6 +104,11 @@ TRI validation; candidate support; cancellation, disable, seek and target reset.
 `AfxHookSource2/UDV/`, host CMake and minimal callbacks in main/render hooks;
 this report and five docs files.
 ## 24. Current implementation status
+Native-source preparation: `Worker::loadSnapshot` accepts owned collision triangles
+and revision, bypasses file parsing, and invalidates old results on updates. Tests
+cover analysis and replacement without TRI. Actual running-game extraction is
+not implemented and still requires target-build investigation. Do not report
+the no-external-geometry product requirement as completed.
 Portable core and worker built with GCC 13.3 Release. Tests pass for required
 visibility cases, FOV, finite segments, floor candidates, cancellation, latest-only
 publication, disable/unload, map load failure and malformed TRI. Host integration
