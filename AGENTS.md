@@ -61,7 +61,9 @@ Do not claim native runtime success from portable tests alone.
 ## Current next step
 
 Investigate native Windows CS2 collision access/ownership offline; owned mesh/face
-conversion and worker ingestion are tested. Do not invent ABI offsets or claim
+conversion and worker ingestion are tested. Start with
+`docs/NATIVE-COLLISION-RESEARCH.md` for inspected routes and unresolved contracts.
+Do not invent ABI offsets or claim
 these tests validate extraction. Windows host build and strict CUDA parity remain;
 live CS2 acceptance requires separate explicit authorization.
 Transfer this nested repository's Git history; the wrapper ignores `repos/`.

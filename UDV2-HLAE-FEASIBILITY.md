@@ -83,6 +83,10 @@ is not redistributed or linked. The optional CUDA backend links static cudart;
 redistribution must follow NVIDIA toolkit terms. No toolkit binaries or map assets
 are committed. Map assets remain user supplied.
 ## 17. Uncertainties
+See [native collision research](docs/NATIVE-COLLISION-RESEARCH.md) for the follow-up
+source audit. Inspected public traces are server-bound, not client enumeration.
+Existing HLAE callbacks do not establish safe physics ownership. Shared movement/
+sight geometry and per-shape policy also need review before native filtering.
 Current user constraint forbids launching/attaching to Steam/CS2, injection, loading
 game libraries for execution, or editing the game installation. Continue offline
 source/file research and standalone tests only. Runtime validation needs new consent.

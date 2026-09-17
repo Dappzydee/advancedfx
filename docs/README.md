@@ -10,6 +10,8 @@ without external TRI assets. The in-memory snapshot input is implemented/tested;
 Owned mesh/convex-face conversion is also implemented/tested, without file input;
 the CS2 collision extractor is **not implemented**. The TRI command below is the
 existing diagnostic path, not completion of that requirement.
+See [native collision research](NATIVE-COLLISION-RESEARCH.md) for access/ownership
+evidence and the remaining adapter blockers.
 
 Portable geometry, reciprocal classification and asynchronous worker are implemented
 and tested. CUDA primary backend and parity tooling compile/link with CUDA 13.0

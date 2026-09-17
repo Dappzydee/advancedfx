@@ -2,6 +2,9 @@
 
 ## Added
 
+- Offline native-collision research checkpoint: client/server interface distinction,
+  existing HLAE lifecycle/schema limits, snapshot ownership requirements and the
+  unresolved movement-versus-sight filtering issue. No native calls added.
 - Collision conversion diagnostics include shape index/ID and the underlying error;
   a worker regression checks a failing second shape with a 64-bit ID.
 - Owned collision-scene conversion for indexed meshes and ordered convex faces,
