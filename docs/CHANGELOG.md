@@ -2,6 +2,8 @@
 
 ## Added
 
+- Shared UDV/UDV2 glossary defining directional visibility, exposure gaps,
+  stance-aware classifications, floor-marker meaning, and existing UI aliases.
 - Offline native-collision research checkpoint: client/server interface distinction,
   existing HLAE lifecycle/schema limits, snapshot ownership requirements and the
   unresolved movement-versus-sight filtering issue. No native calls added.

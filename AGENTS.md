@@ -19,6 +19,8 @@ Before changing anything:
 
 UDV2 analyzes the current native CS2 demo pose: floor positions where a player
 can see a hypothetical enemy, or that enemy can see the player while unseen.
+Use `docs/GLOSSARY.md` for canonical terms. UDV means the original proof of
+concept in `repos/Ultimate-Demo-Viewer`; UDV2 is this HLAE implementation.
 
 ## Current architecture
 

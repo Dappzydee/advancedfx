@@ -66,6 +66,7 @@ has been pushed. GPU parity must return 0 (77 means unavailable), then verify li
 POV/scoped FOV, floor/depth alignment, pause/seek/target/map changes, toggle-off,
 and frame times with CUDA enabled versus disabled. See COMPATIBILITY for evidence.
 
-See [architecture](ARCHITECTURE.md), [features](FEATURES.md),
+See [glossary](GLOSSARY.md) for the precise meanings of vision and gap,
+[architecture](ARCHITECTURE.md), [features](FEATURES.md),
 [compatibility](COMPATIBILITY.md), [changelog](CHANGELOG.md), and the
 [engineering report](../UDV2-HLAE-FEASIBILITY.md).
